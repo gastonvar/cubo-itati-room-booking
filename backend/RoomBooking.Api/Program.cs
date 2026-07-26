@@ -10,6 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 EnvironmentConfiguration.Load(builder.Environment.ContentRootPath, builder.Configuration);
 
 builder.Services.AddControllersWithCamelCaseJson();
+builder.Services.AddForwardedHeadersSupport();
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddSingleton<IBookingClock, BookingClock>();
 builder.Services.AddAppDatabase(builder.Configuration);

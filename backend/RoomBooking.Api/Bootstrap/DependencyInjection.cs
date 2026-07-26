@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using RoomBooking.Api.Features.Auth;
@@ -19,6 +20,23 @@ public static class DependencyInjection
             {
                 options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
             });
+        return services;
+    }
+
+    /// <summary>
+    /// Trust X-Forwarded-Proto/For from the platform proxy so Request.IsHttps
+    /// (and Secure auth cookies) work behind Railway HTTPS termination.
+    /// </summary>
+    public static IServiceCollection AddForwardedHeadersSupport(this IServiceCollection services)
+    {
+        services.Configure<ForwardedHeadersOptions>(options =>
+        {
+            options.ForwardedHeaders =
+                ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+            // Cloud proxies (Railway, etc.) are not in the default known list.
+            options.KnownIPNetworks.Clear();
+            options.KnownProxies.Clear();
+        });
         return services;
     }
 

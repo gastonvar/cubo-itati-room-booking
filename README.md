@@ -58,3 +58,51 @@ cd backend
 dotnet test
 ```
 
+## Deployment (Railway)
+
+Deploy as **two services** from this monorepo (challenge tip: Railway).
+
+### 1. API service
+
+- Root directory: `backend`
+- Builder: Dockerfile (`backend/Dockerfile`)
+- Health check: `GET /health`
+- Attach a volume mounted at `/app/Data` so SQLite survives redeploys
+
+Required variables:
+
+| Variable | Example |
+| --- | --- |
+| `Jwt__Secret` | long random string (≥32 chars) |
+| `Gemini__ApiKey` (and/or Groq / OpenRouter) | your provider key |
+| `Cors__Origins` | `https://<frontend-domain>` |
+| `ASPNETCORE_ENVIRONMENT` | `Production` |
+| `ConnectionStrings__Default` | `Data Source=Data/roombooking.db;Cache=Shared;Default Timeout=30` |
+
+Optional: `Gemini__Model`, `Groq__ApiKey`, `Groq__Model`, `OpenRouter__ApiKey`, `OpenRouter__Model`.
+
+### 2. Frontend service
+
+- Root directory: `frontend`
+- Builder: Dockerfile (`frontend/Dockerfile`)
+- Set `VITE_API_URL=https://<api-domain>` as a **build-time** variable (Vite inlines it)
+
+### 3. Wire the public URLs
+
+1. Create both services and generate public domains.
+2. Set API `Cors__Origins` to the exact frontend origin (HTTPS, no trailing slash).
+3. Set frontend `VITE_API_URL` to the exact API origin, then **redeploy the frontend** so the build picks it up.
+4. Smoke test: open the SPA → login as `User1` → confirm `/health` on the API → create a booking → refresh and confirm it persists.
+
+Local Docker smoke (optional, Docker Desktop running):
+
+```powershell
+cd backend
+docker build -t cubo-itati-api .
+docker run --rm -p 8080:8080 -e PORT=8080 -e Jwt__Secret=dev-secret-at-least-32-characters!! -e Gemini__ApiKey=unused cubo-itati-api
+
+cd ..\frontend
+docker build --build-arg VITE_API_URL=http://localhost:8080 -t cubo-itati-web .
+docker run --rm -p 3000:3000 -e PORT=3000 cubo-itati-web
+```
+

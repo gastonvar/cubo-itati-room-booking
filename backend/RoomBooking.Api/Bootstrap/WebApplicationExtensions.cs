@@ -4,6 +4,8 @@ public static class WebApplicationExtensions
 {
     public static WebApplication ConfigurePipeline(this WebApplication app)
     {
+        // Must run before anything that reads Request.IsHttps / scheme (cookies, redirects).
+        app.UseForwardedHeaders();
         app.UseCors();
         app.UseAuthentication();
         app.UseAuthorization();
