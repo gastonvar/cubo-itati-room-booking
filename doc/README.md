@@ -45,6 +45,7 @@ into an empty rooms table; existing room rows are left as-is.
 | Cancel only the current user's booking | `cancel_booking` with owner validation |
 | Explain stack with code examples | [`technology-walkthrough.ipynb`](technology-walkthrough.ipynb) |
 | Component diagram | [`component-diagram.md`](component-diagram.md) |
+| Cloud deployment | Railway: API + frontend services (see [Deployment](#deployment-railway)) |
 
 ## Development process
 
@@ -66,6 +67,9 @@ into an empty rooms table; existing room rows are left as-is.
 7. **Add tests and provider fallback.** Unit tests cover slot and booking rules,
    seeding, tool date handling, and service behavior. Chat retries
    configured providers in the order Gemini, Groq, then OpenRouter.
+8. **Deploy to Railway.** The monorepo ships as two Docker services (API and
+   SPA), with CORS/`VITE_API_URL` wiring, forwarded headers for Secure cookies,
+   and a SQLite volume on the API.
 
 ## Key decisions
 
@@ -98,8 +102,16 @@ provider restarts from the same client-visible message history.
 
 SQLite keeps local setup small and reproducible. Repository code accounts for
 SQLite's limited `DateTimeOffset` translation by filtering selected ranges in
-memory. This is appropriate for the challenge's small room and booking volume,
-but not a claim of multi-instance production scalability.
+memory. This is appropriate for the challenge's small room and booking volume
+and for a single Railway API instance with a mounted volume.
+
+### Railway dual-service deploy
+
+The challenge tip allows Railway. The API and SPA are separate services from the
+same GitHub monorepo, each with a Dockerfile and `railway.toml`. Watch paths
+limit rebuilds to `/backend/**` or `/frontend/**`. The API uses forwarded
+headers so httpOnly Secure cookies work behind Railway’s HTTPS proxy, and a
+volume at `/app/Data` keeps SQLite across redeploys.
 
 ## Challenges and resolutions
 
@@ -181,6 +193,30 @@ Demo credentials:
 
 - `User1` / `TechnicalChallengePromtior`
 - `User2` / `TechnicalChallengePromtior`
+
+## Deployment (Railway)
+
+The solution is deployed on Railway as two services from
+[gastonvar/cubo-itati-room-booking](https://github.com/gastonvar/cubo-itati-room-booking):
+
+| Service | Public URL |
+| --- | --- |
+| Frontend (SPA) | https://web-production-701d0.up.railway.app |
+| API | https://api-production-f9f92.up.railway.app |
+
+Configuration summary:
+
+- **API** — root `backend/`, Dockerfile builder, health check `GET /health`,
+  volume mounted at `/app/Data`, watch paths `/backend/**`
+- **Frontend** — root `frontend/`, Dockerfile builder, build-time
+  `VITE_API_URL` pointing at the API origin, watch paths `/frontend/**`
+- **CORS** — API `Cors__Origins` set to the frontend origin (HTTPS, no trailing
+  slash)
+- **Secrets** — `Jwt__Secret` and at least one LLM provider key
+  (`Gemini__ApiKey`, and optionally Groq / OpenRouter)
+
+Full env checklist and local Docker smoke commands live in the root
+[`README.md`](../README.md#deployment-railway).
 
 ## Verification
 

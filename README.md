@@ -60,12 +60,21 @@ dotnet test
 
 ## Deployment (Railway)
 
+Live demo:
+
+| Service | URL |
+| --- | --- |
+| Frontend | https://web-production-701d0.up.railway.app |
+| API | https://api-production-f9f92.up.railway.app (`/health`) |
+
 Deploy as **two services** from this monorepo (challenge tip: Railway).
+Each service’s `railway.toml` sets watch paths so only matching folder changes trigger a redeploy (`/backend/**` vs `/frontend/**`).
 
 ### 1. API service
 
 - Root directory: `backend`
 - Builder: Dockerfile (`backend/Dockerfile`)
+- Watch paths: `/backend/**`
 - Health check: `GET /health`
 - Attach a volume mounted at `/app/Data` so SQLite survives redeploys
 
@@ -85,6 +94,7 @@ Optional: `Gemini__Model`, `Groq__ApiKey`, `Groq__Model`, `OpenRouter__ApiKey`, 
 
 - Root directory: `frontend`
 - Builder: Dockerfile (`frontend/Dockerfile`)
+- Watch paths: `/frontend/**`
 - Set `VITE_API_URL=https://<api-domain>` as a **build-time** variable (Vite inlines it)
 
 ### 3. Wire the public URLs
