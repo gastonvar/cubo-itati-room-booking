@@ -92,97 +92,12 @@ h4 {
   animation: overlay-in 0.2s ease-out both;
 }
 
-.schedule-calendar {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  min-height: 0;
-  height: 100%;
-  font-family: var(--font-body);
-  color: var(--color-charcoal);
-}
-
 .schedule-calendar .rbc-calendar {
   display: flex;
   flex: 1;
   flex-direction: column;
   min-height: 0;
   height: 100%;
-}
-
-.schedule-calendar .rbc-toolbar {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  grid-template-areas:
-    'label label'
-    'nav views';
-  align-items: center;
-  gap: 0.5rem 0.75rem;
-  margin-bottom: 0.75rem;
-  flex-shrink: 0;
-}
-
-.schedule-calendar .rbc-toolbar > .rbc-btn-group:first-child {
-  grid-area: nav;
-  display: inline-flex;
-  justify-self: start;
-}
-
-/* Visual order: Back · Today · Next (DOM is Today, Back, Next) */
-.schedule-calendar .rbc-toolbar > .rbc-btn-group:first-child > button:nth-child(1) {
-  order: 2;
-  margin-left: -1px;
-  border-radius: 0;
-}
-
-.schedule-calendar .rbc-toolbar > .rbc-btn-group:first-child > button:nth-child(2) {
-  order: 1;
-  margin-left: 0;
-  border-radius: 0.75rem 0 0 0.75rem;
-}
-
-.schedule-calendar .rbc-toolbar > .rbc-btn-group:first-child > button:nth-child(3) {
-  order: 3;
-  margin-left: -1px;
-  border-radius: 0 0.75rem 0.75rem 0;
-}
-
-.schedule-calendar .rbc-toolbar > .rbc-btn-group:last-child {
-  grid-area: views;
-  justify-self: end;
-}
-
-.schedule-calendar .rbc-toolbar button {
-  border: 1px solid rgba(28, 25, 23, 0.12);
-  border-radius: 0.75rem;
-  color: var(--color-charcoal);
-  background: rgba(255, 255, 255, 0.8);
-  padding: 0.35rem 0.75rem;
-  font-size: 0.8125rem;
-  font-weight: 500;
-}
-
-.schedule-calendar .rbc-toolbar button:hover,
-.schedule-calendar .rbc-toolbar button:focus {
-  background: #fff;
-  border-color: rgba(15, 118, 110, 0.35);
-  color: var(--color-teal-accent);
-}
-
-.schedule-calendar .rbc-toolbar button.rbc-active {
-  background: var(--color-teal-accent);
-  border-color: var(--color-teal-accent);
-  color: #fff;
-  box-shadow: none;
-}
-
-.schedule-calendar .rbc-toolbar-label {
-  grid-area: label;
-  padding: 0;
-  text-align: center;
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 0.95rem;
 }
 
 .schedule-calendar .rbc-month-view,
@@ -246,36 +161,9 @@ h4 {
   color: var(--color-teal-accent);
 }
 
-.schedule-calendar .rbc-event-free .rbc-event-booking-meta {
-  font-weight: 500;
-}
-
 /* Time is already in the gutter — keep the meeting title visible on short slots. */
 .schedule-calendar .rbc-event-label {
   display: none;
-}
-
-.schedule-calendar .rbc-event-booking-content {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: 0.05rem;
-}
-
-.schedule-calendar .rbc-event-booking-meta {
-  font-weight: 600;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.schedule-calendar .rbc-event-booking-attendees {
-  font-size: 0.65rem;
-  font-weight: 400;
-  opacity: 0.9;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .schedule-calendar .rbc-show-more {

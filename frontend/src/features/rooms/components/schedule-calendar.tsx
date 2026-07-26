@@ -9,6 +9,7 @@ import {
 import { format, getDay, parse, startOfWeek } from 'date-fns'
 import { enUS } from 'date-fns/locale'
 
+import { ScheduleCalendarToolbar } from '@/features/rooms/components/schedule-calendar-toolbar'
 import { getRoomColor } from '@/features/rooms/lib/room-colors'
 import type {
   CalendarEvent,
@@ -87,8 +88,8 @@ function BookingEvent({
   if (event.kind === 'free') {
     const label = showRoom ? `Room ${event.roomCode} · Available` : 'Available'
     return (
-      <div className="rbc-event-booking-content">
-        <div className="rbc-event-booking-meta">{label}</div>
+      <div className="flex min-w-0 flex-col gap-0.5">
+        <div className="truncate font-medium">{label}</div>
       </div>
     )
   }
@@ -103,10 +104,12 @@ function BookingEvent({
     event.attendees === 1 ? '1 attendee' : `${event.attendees} attendees`
 
   return (
-    <div className="rbc-event-booking-content">
-      <div className="rbc-event-booking-meta">{metaParts.join(' · ')}</div>
+    <div className="flex min-w-0 flex-col gap-0.5">
+      <div className="truncate font-semibold">{metaParts.join(' · ')}</div>
       {event.attendees > 0 ? (
-        <div className="rbc-event-booking-attendees">{attendeesLabel}</div>
+        <div className="truncate text-[0.65rem] font-normal opacity-90">
+          {attendeesLabel}
+        </div>
       ) : null}
     </div>
   )
@@ -129,8 +132,18 @@ export function ScheduleCalendar({
     [occupied, freeSlots],
   )
 
+  const components = useMemo(
+    () => ({
+      toolbar: ScheduleCalendarToolbar,
+      event: ({ event }: { event: CalendarEvent }) => (
+        <BookingEvent event={event} showRoom={showRoomInEvent} />
+      ),
+    }),
+    [showRoomInEvent],
+  )
+
   return (
-    <div className="schedule-calendar">
+    <div className="schedule-calendar flex h-full min-h-0 flex-1 flex-col font-body text-charcoal">
       <Calendar
         localizer={localizer}
         formats={formats}
@@ -170,11 +183,7 @@ export function ScheduleCalendar({
         scrollToTime={dayMin}
         step={30}
         timeslots={2}
-        components={{
-          event: ({ event }) => (
-            <BookingEvent event={event} showRoom={showRoomInEvent} />
-          ),
-        }}
+        components={components}
         eventPropGetter={(event: CalendarEvent) => {
           if (event.kind === 'free') {
             return {
