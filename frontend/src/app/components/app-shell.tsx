@@ -16,7 +16,7 @@ export function AppShell({ children, scheduleToggle }: AppShellProps) {
   return (
     <div className="flex h-dvh flex-col overflow-hidden">
       <header className="shrink-0 border-b border-stone-200/60 bg-white/70 backdrop-blur-md">
-        <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-4 py-3 md:px-6">
+        <div className="mx-auto flex w-full max-w-[94rem] items-center justify-between gap-4 px-4 py-3 md:px-6">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-teal-accent text-sm font-display font-bold text-white">
               CI
@@ -48,7 +48,7 @@ export function AppShell({ children, scheduleToggle }: AppShellProps) {
         </div>
       </header>
 
-      <main className="mx-auto flex min-h-0 w-full max-w-7xl flex-1 flex-col overflow-hidden px-4 py-4 md:px-6 md:py-6">
+      <main className="mx-auto flex min-h-0 w-full max-w-[94rem] flex-1 flex-col overflow-hidden px-4 py-4 md:px-6 md:py-6">
         {children}
       </main>
     </div>

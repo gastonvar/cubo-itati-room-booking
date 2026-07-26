@@ -99,7 +99,7 @@ export function SchedulePanel({
 
   return (
     <aside
-      className={`flex h-full min-h-0 flex-col border-stone-200/70 bg-[var(--surface)] ${className}`}
+      className={`flex h-full min-h-0 w-full flex-col border-stone-200/70 bg-[var(--surface)] ${className}`}
     >
       <header className="flex items-start justify-between gap-3 border-b border-stone-200/60 px-4 py-4 md:px-5">
         <div>

@@ -23,13 +23,13 @@ export function WorkspaceRoute() {
   )
 
   const panelShellClass = scheduleOpen
-    ? 'drawer-enter fixed inset-y-0 right-0 z-50 w-[min(100%,22rem)] overflow-hidden rounded-l-3xl border-l border-stone-200/70 shadow-2xl lg:relative lg:inset-auto lg:z-auto lg:flex lg:w-[min(100%,22rem)] lg:shrink-0 lg:rounded-3xl lg:border lg:border-stone-200/70 lg:shadow-[var(--shadow-soft)]'
-    : 'hidden lg:relative lg:flex lg:w-[min(100%,22rem)] lg:shrink-0 lg:overflow-hidden lg:rounded-3xl lg:border lg:border-stone-200/70 lg:shadow-[var(--shadow-soft)]'
+    ? 'drawer-enter fixed inset-y-0 right-0 z-50 w-[min(100%,36rem)] overflow-hidden rounded-l-3xl border-l border-stone-200/70 shadow-2xl lg:relative lg:inset-auto lg:z-auto lg:flex lg:w-[36rem] lg:shrink-0 lg:rounded-3xl lg:border lg:border-stone-200/70 lg:shadow-[var(--shadow-soft)]'
+    : 'hidden lg:relative lg:flex lg:w-[36rem] lg:shrink-0 lg:overflow-hidden lg:rounded-3xl lg:border lg:border-stone-200/70 lg:shadow-[var(--shadow-soft)]'
 
   return (
     <AppShell scheduleToggle={scheduleToggle}>
       <div className="flex min-h-0 flex-1 gap-4 overflow-hidden md:gap-6">
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+        <div className="flex min-h-0 min-w-0 w-full flex-1 flex-col overflow-hidden">
           <ChatPanel onResponseSuccess={() => invalidateRoomQueries(queryClient)} />
         </div>
 

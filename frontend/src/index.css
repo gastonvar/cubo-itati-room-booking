@@ -111,10 +111,45 @@ h4 {
 }
 
 .schedule-calendar .rbc-toolbar {
-  gap: 0.5rem;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    'label label'
+    'nav views';
+  align-items: center;
+  gap: 0.5rem 0.75rem;
   margin-bottom: 0.75rem;
-  flex-wrap: wrap;
   flex-shrink: 0;
+}
+
+.schedule-calendar .rbc-toolbar > .rbc-btn-group:first-child {
+  grid-area: nav;
+  display: inline-flex;
+  justify-self: start;
+}
+
+/* Visual order: Back · Today · Next (DOM is Today, Back, Next) */
+.schedule-calendar .rbc-toolbar > .rbc-btn-group:first-child > button:nth-child(1) {
+  order: 2;
+  margin-left: -1px;
+  border-radius: 0;
+}
+
+.schedule-calendar .rbc-toolbar > .rbc-btn-group:first-child > button:nth-child(2) {
+  order: 1;
+  margin-left: 0;
+  border-radius: 0.75rem 0 0 0.75rem;
+}
+
+.schedule-calendar .rbc-toolbar > .rbc-btn-group:first-child > button:nth-child(3) {
+  order: 3;
+  margin-left: -1px;
+  border-radius: 0 0.75rem 0.75rem 0;
+}
+
+.schedule-calendar .rbc-toolbar > .rbc-btn-group:last-child {
+  grid-area: views;
+  justify-self: end;
 }
 
 .schedule-calendar .rbc-toolbar button {
@@ -142,6 +177,9 @@ h4 {
 }
 
 .schedule-calendar .rbc-toolbar-label {
+  grid-area: label;
+  padding: 0;
+  text-align: center;
   font-family: var(--font-display);
   font-weight: 600;
   font-size: 0.95rem;
