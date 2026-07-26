@@ -2,7 +2,7 @@
 **/bin/
 **/obj/
 **/.vs/
-**/Data/
+**/RoomBooking.Api/Data/
 **/*.user
 **/*.db
 **/RoomBooking.Api.Tests/
