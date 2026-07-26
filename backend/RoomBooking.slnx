@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="RoomBooking.Api.Tests/RoomBooking.Api.Tests.csproj" />
+  <Project Path="RoomBooking.Api/RoomBooking.Api.csproj" />
+</Solution>

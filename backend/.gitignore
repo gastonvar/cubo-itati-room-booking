@@ -1,0 +1,11 @@
+.env
+*.db
+/RoomBooking.Api/Data/
+
+# .NET
+bin/
+obj/
+.vs/
+*.user
+*.suo
+*.DotSettings.user
