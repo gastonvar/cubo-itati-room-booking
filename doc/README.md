@@ -49,27 +49,86 @@ into an empty rooms table; existing room rows are left as-is.
 
 ## Development process
 
-1. **Model the domain rules.** The time-slot, duration, capacity, ownership, and
-   overlap constraints were implemented in server-side domain and application
-   services so they cannot be bypassed by the UI or LLM.
-2. **Build deterministic booking operations.** Repository and service methods
-   became the source of truth for room schedules and booking mutations.
-3. **Expose operations as LLM tools.** Tool schemas describe the supported
-   operations, while `ChatBookingTools` validates arguments and dispatches to
-   deterministic services.
-4. **Add conversational safeguards.** The system prompt requires availability
-   checks and explicit confirmation before creating or cancelling a booking.
-5. **Add authentication.** Login issues short-lived access tokens and rotating
-   refresh tokens in httpOnly cookies. Booking ownership comes from the
-   authenticated identity, never from model-provided arguments.
-6. **Build the frontend.** The mobile-first workspace combines chat with a room
-   schedule panel and handles loading, empty, and error states.
-7. **Add tests and provider fallback.** Unit tests cover slot and booking rules,
-   seeding, tool date handling, and service behavior. Chat retries
-   configured providers in the order Gemini, Groq, then OpenRouter.
-8. **Deploy to Railway.** The monorepo ships as two Docker services (API and
-   SPA), with CORS/`VITE_API_URL` wiring, forwarded headers for Secure cookies,
-   and a SQLite volume on the API.
+This was my first experience building a chatbot assistant, so I treated the
+challenge as an opportunity to experiment and learn. I started with the parts
+that were already familiar to me. The frontend is a React SPA organized with
+the Bulletproof React approach: feature-first modules and a clear separation
+between application setup, shared components, and feature code. This is close
+to my day-to-day frontend work and gives the small application a structure that
+can remain maintainable as it grows.
+
+For the backend, I chose .NET 10. At work I normally use .NET 8, so this also
+gave me an opportunity to work with a newer runtime while using modern C#
+syntax, including language features introduced since C# 12. The API is a
+single project organized entirely as vertical feature slices. I first modeled
+the domain rules and built only the services and endpoints required by the
+challenge. Time-slot, duration, capacity, ownership, and overlap constraints
+live in deterministic backend services and cannot be bypassed by either the UI
+or the LLM.
+
+Once the backend could satisfy the PDF requirements without unnecessary
+endpoints, I implemented the frontend as a deliberately thin client. Its
+backend interactions are limited to authentication, chatbot messages, and the
+room schedule used by the calendar panel. The browser does not attempt to
+reimplement booking decisions that belong to the server.
+
+With those familiar pieces complete, I moved on to the part I needed to learn:
+LLM integration. I initially expected this to be a single API call, but quickly
+learned that the application has to orchestrate the conversation and the tool
+execution loop itself. I implemented Gemini first. After exhausting its free
+usage while testing, I added Groq and OpenRouter as fallback providers. Their
+OpenAI-compatible APIs allowed them to share most of one implementation,
+although Gemini requires a different request and tool format.
+
+The SPA sends the complete visible user/assistant history with every chat
+request. Tool calls and tool results are temporary server-side context within
+that request; they are not exposed to the browser or persisted as chat history.
+
+The first working orchestrator was rough around the edges. I iteratively tuned
+the system prompt, tool names and descriptions, argument schemas, and success
+and error results so that the model had enough context to choose tools and
+explain the outcome accurately. I then added deterministic guardrails wherever
+possible: authenticated identity comes from the JWT, mutations require an
+explicit confirmation flag, dates are normalized on the server, and every
+booking rule is checked by application services. Unit tests cover slot and
+booking rules, seeding, tool date handling, and service behavior.
+
+Finally, I deployed the monorepo to Railway as separate API and SPA Docker
+services, with CORS and `VITE_API_URL` wiring, forwarded headers for secure
+cookies, and a persistent SQLite volume.
+
+### How chat orchestration and tool calling work
+
+1. The authenticated SPA sends `POST /chat` with the full visible conversation.
+   The controller takes the username from the JWT; the model is never trusted
+   to choose the booking owner.
+2. `ChatSystemPromptBuilder` creates a fresh system prompt containing the
+   booking rules, room catalog, and authoritative current Montevideo date and
+   time. `ChatOrchestrator` then tries the configured providers in order:
+   Gemini, Groq, and OpenRouter. If a provider is unavailable, the next one
+   starts from the same client-visible history rather than inheriting a partial
+   internal tool trace.
+3. `BookingToolDefinitions` describes each available function to the model:
+   its name, purpose, parameters, required fields, and expected formats. The
+   shared definitions are converted to Gemini function declarations or
+   OpenAI-compatible tool schemas. The tools cover availability, room
+   schedules, the current user's bookings, creation, and cancellation.
+4. If the model returns ordinary text without a tool call, that text is the
+   final answer. The backend exits the provider loop and returns one assistant
+   reply to the SPA.
+5. If the model returns one or more tool calls, `ChatBookingTools` parses their
+   arguments and dispatches them to the deterministic room or booking service.
+   Invalid arguments and domain failures become structured tool results just
+   like successful operations; the model cannot report a database write as
+   successful merely because it requested one.
+6. The backend appends the tool result to the provider's temporary conversation
+   and calls the model again. The model can request another tool or use the
+   result to produce a user-facing explanation. This continues until the model
+   returns text with no tool calls, or until the eight-round safety limit is
+   reached.
+7. Only the final text leaves the orchestration loop. Intermediate tool calls,
+   results, and provider details remain internal; the frontend receives a
+   single `reply` and adds it to the visible conversation.
 
 ## Key decisions
 
@@ -126,6 +185,14 @@ hours against that timezone; `BusinessCalendar` expands calendar days into
 08:00–20:00 bounds. The schedule HTTP API uses half-open Montevideo calendar
 dates (`fromDate`, `toDateExclusive`) so the UI and chat tools share one
 contract.
+
+This was the main challenge encountered during development. During early tests,
+the models repeatedly hallucinated dates in 2023 even when the user's wording
+clearly referred to the present. Prompt wording alone was not reliable enough,
+so the solution now hardens date handling at several levels: the server's
+current time is injected into every system prompt, tool descriptions restate
+the expected date semantics, tool arguments are normalized centrally, and the
+booking services reject invalid or past times.
 
 ### Preventing hallucinated bookings
 
