@@ -263,6 +263,35 @@ Demo credentials:
 
 ## Deployment (Railway)
 
+My first plan was to host the dockerized apps on my home lab: expose the ports, point
+dynamic DNS at my public IP, hook the environment vars. The challenge PDF requires a cloud
+deployment, so that was not enough. Instead of the AWS or Azure paths I already
+know (S3 + App Runner or ECS + ECR, or Azure resource groups), I looked at GCP
+and Railway and chose Railway specifically to learn something new. The
+deployment turned out to be straightforward.
+
+### Deploying through the Railway UI
+
+From the Railway dashboard I created a project, connected the GitHub monorepo,
+and added **two services** from the same repository: one with root directory
+`backend`, the other with root `frontend`. Each service builds from its own
+Dockerfile. I generated a public domain for both, set the environment variables
+in the UI, attached a volume to the API at `/app/Data` for SQLite, then wired
+the two public URLs together (`Cors__Origins` on the API, build-time
+`VITE_API_URL` on the frontend) and redeployed. After that, pushes that touch
+the matching watch paths trigger a rebuild automatically. I realized that with
+Railway you do not really need a full CI/CD yaml pipeline: connecting the repo and
+letting Railway build and redeploy from Git is enough for this project.
+
+Each folder ships a `railway.toml` that keeps the UI setup minimal:
+
+- `backend/railway.toml` — Dockerfile builder, watch patterns `/backend/**`,
+  health check on `/health`, and restart on failure.
+- `frontend/railway.toml` — Dockerfile builder, watch patterns `/frontend/**`,
+  and the same restart policy (no health check path; the SPA is static).
+
+### Live demo
+
 The solution is deployed on Railway as two services from
 [gastonvar/cubo-itati-room-booking](https://github.com/gastonvar/cubo-itati-room-booking):
 
